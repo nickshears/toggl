@@ -4,7 +4,7 @@ require "chronic_duration"
 require "multi_json"
 require "pp"
 
-YAML::ENGINE.yamler = 'syck'
+# YAML::ENGINE.yamler = 'syck'
 
 class Toggl
   include HTTParty
@@ -61,7 +61,7 @@ class Toggl
   end
 
   def get_time_entry(id)
-    get "time_entries/#{id}"
+    get "api/v8/time_entries/#{id}"
   end
 
   def create_time_entry(params={})
@@ -75,7 +75,7 @@ class Toggl
                     :project => {:id => project_id},
                     :tag_names => [name]})
 
-    post 'time_entries', MultiJson.encode({:time_entry => params})
+    post 'api/v8/time_entries', MultiJson.encode({:time_entry => params})
   end
 
   def update_time_entry(params={})
@@ -83,7 +83,7 @@ class Toggl
   end
 
   def delete_time_entry(id)
-    self.class.delete("/api/v6/time_entries/#{id}.json", :basic_auth => basic_auth)
+    self.class.delete("/api/v8/time_entries/#{id}.json", :basic_auth => basic_auth)
   end
 
   def clients
@@ -100,6 +100,10 @@ class Toggl
 
   def delete_client(id)
     delete "clients/#{id}"
+  end
+
+  def project id
+    get "projects/#{id}"
   end
 
   def projects
@@ -141,24 +145,26 @@ class Toggl
   private
   
   def get(resource_name, data={})
-    response = self.class.get("/api/v6/#{resource_name}.json", :basic_auth => basic_auth, :query => data)
-    response['data'].nil? ? response : response['data'] 
+    response = self.class.get("/api/v8/#{resource_name}", :basic_auth => basic_auth, :query => data)
+    # (response['data'].present?) ? response['data'] : response
+    # response["data"]
+    # response
   end
 
   def post(resource_name, data)
-    response = self.class.post("/api/v6/#{resource_name}.json", :body => data, :basic_auth => basic_auth,
+    response = self.class.post("/api/v8/#{resource_name}.json", :body => data, :basic_auth => basic_auth,
       :options => { :headers => {"Content-type" => "application/json"}})
     response['data'].nil? ? response : response['data'] 
   end
 
   def put(resource_name, data)
-    response = self.class.put("/api/v6/#{resource_name}.json", :body => data, :basic_auth => basic_auth,
+    response = self.class.put("/api/v8/#{resource_name}.json", :body => data, :basic_auth => basic_auth,
       :options => { :headers => {"Content-type" => "application/json"}})
     response['data'].nil? ? response : response['data'] 
   end
 
   def delete(resource_name, id)
-    self.class.delete("/api/v6/#{resource_name}/#{id}.json", :basic_auth => basic_auth)
+    self.class.delete("/api/v8/#{resource_name}/#{id}.json", :basic_auth => basic_auth)
   end
 
   def basic_auth
